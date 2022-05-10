@@ -46,6 +46,10 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   // Jumps and branches
   output logic [31:0] jmp_target_o,
 
+  // Outcome of branch prediction
+  output logic         bch_outcome_id_o
+  output logic [31:0]  bch_target_from_id
+
   // IF/ID pipeline
   input  if_id_pipe_t if_id_pipe_i,
 
@@ -266,14 +270,15 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
 
   cv32e40x_pc_target cv32e40x_pc_target_i
   (
-    .bch_jmp_mux_sel_i ( bch_jmp_mux_sel ),
-    .pc_id_i           ( if_id_pipe_i.pc ),
-    .imm_uj_type_i     ( imm_uj_type     ),
-    .imm_sb_type_i     ( imm_sb_type     ),
-    .imm_i_type_i      ( imm_i_type      ),
-    .jalr_fw_i         ( jalr_fw         ),
-    .bch_target_o      ( bch_target      ),
-    .jmp_target_o      ( jmp_target_o    )
+    .bch_jmp_mux_sel_i   ( bch_jmp_mux_sel ),
+    .pc_id_i             ( if_id_pipe_i.pc ),
+    .imm_uj_type_i       ( imm_uj_type     ),
+    .imm_sb_type_i       ( imm_sb_type     ),
+    .imm_i_type_i        ( imm_i_type      ),
+    .jalr_fw_i           ( jalr_fw         ),
+    .bch_target_o        ( bch_target      ),
+    .jmp_target_o        ( jmp_target_o    ),
+    .bch_prediction_id_o ( bch_outcome_id_o)
   );
 
   ////////////////////////////////////////////////////////

@@ -32,7 +32,8 @@ module cv32e40x_pc_target import cv32e40x_pkg::*;
    input  logic [31:0]  imm_i_type_i,
    input  logic [31:0]  jalr_fw_i,
    output logic [31:0]  bch_target_o,
-   output logic [31:0]  jmp_target_o
+   output logic [31:0]  jmp_target_o,
+   output logic         bch_prediction_id_o
   );
 
   logic [31:0] pc_target;
@@ -43,7 +44,13 @@ module cv32e40x_pc_target import cv32e40x_pkg::*;
   always_comb begin : pc_target_mux
     unique case (bch_jmp_mux_sel_i)
       CT_JAL:  pc_target = pc_id_i   + imm_uj_type_i;
-      CT_BCH:  pc_target = pc_id_i   + imm_sb_type_i;
+      CT_BCH:  begin 
+                    pc_target = pc_id_i   + imm_sb_type_i;
+                    if(pc_target < pc_id_i)
+                      bch_taken <= 1;
+                    else 
+                      bch_taken <= 0;
+                  end
       CT_JALR: pc_target = jalr_fw_i + imm_i_type_i;    // Forward from WB, but only of ALU result
       default: pc_target = jalr_fw_i + imm_i_type_i;
     endcase

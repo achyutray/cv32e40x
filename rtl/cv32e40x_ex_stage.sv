@@ -41,6 +41,8 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
 
   // ID/EX pipeline
   input id_ex_pipe_t  id_ex_pipe_i,
+  input  logic        bch_outcome_from_id,
+
 
   // CSR interface
   input  logic [31:0] csr_rdata_i,
@@ -96,6 +98,9 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   logic           alu_cmp_result;
   logic [31:0]    mul_result;
   logic [31:0]    div_result;
+
+  //Branch evaluation result from ALU
+  logic           branch_evaluation_o;
 
   // Gated enable signals factoring in instr_valid)
   logic           mul_en_gated;
@@ -159,8 +164,16 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
   end
 
   // Branch handling
-  assign branch_decision_o = alu_cmp_result;
-  assign branch_target_o   = id_ex_pipe_i.operand_c;
+  assign branch_evaluation_o = alu_cmp_result;
+
+  always_comb
+  begin
+    if (!(bch_outcome_from_id == branch_evaluation_o))
+      branch_decision_o = branch_evaluation_o;
+      assign branch_target_o   = id_ex_pipe_i.operand_c;
+    else 
+      branch_decision_o = bch_outcome_from_id;
+  end
 
   ////////////////////////////
   //     _    _    _   _    //

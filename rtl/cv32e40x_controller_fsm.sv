@@ -55,6 +55,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
   input  logic        alu_jmp_id_i,               // ALU jump
   input  logic        sys_en_id_i,
   input  logic        sys_mret_id_i,              // mret in ID stage
+  input  logic        bch_outcome_from_id,
 
   // From EX stage
   input  id_ex_pipe_t id_ex_pipe_i,
@@ -241,7 +242,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
 
   assign branch_in_ex = id_ex_pipe_i.alu_bch && id_ex_pipe_i.alu_en && id_ex_pipe_i.instr_valid && branch_decision_ex_i;
 
-  // Blocking on branch_taken_q, as a branch ha already been taken
+  // Blocking on branch_taken_q, as a branch has already been taken
   assign branch_taken_ex = branch_in_ex && !branch_taken_q;
 
   // Exception in WB if the following evaluates to 1
