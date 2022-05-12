@@ -40,6 +40,7 @@ module cv32e40x_pc_target import cv32e40x_pkg::*;
 
   assign bch_target_o = pc_target;
   assign jmp_target_o = pc_target;
+  assign bch_prediction_id_o = 0;
 
   always_comb begin : pc_target_mux
     unique case (bch_jmp_mux_sel_i)

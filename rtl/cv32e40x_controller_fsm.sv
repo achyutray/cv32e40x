@@ -137,7 +137,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
   // Events in ID
   logic jump_in_id;
   logic jump_taken_id;
-  logic branch_taken_id;
+  //logic branch_taken_id;
 
   // Events in EX
   logic branch_in_ex;
@@ -248,7 +248,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
   
 
   //Branch handling when decode stage predicts a branch should be taken
-  assign branch_taken_id = id_ex_pipe_i.alu_bch && id_ex_pipe_i.alu_en && id_ex_pipe_i.instr_valid && id_ex_pipe_i.bch_prediction_from_id && !branch_taken_q;
+  //assign branch_taken_id = id_ex_pipe_i.alu_bch && id_ex_pipe_i.alu_en && id_ex_pipe_i.instr_valid && id_ex_pipe_i.bch_prediction_from_id && !branch_taken_q;
 
   // Exception in WB if the following evaluates to 1
   // CLIC: bus errors for pointer fetches are treated as NMI, not exceptions.
@@ -695,7 +695,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
             single_step_halt_if_n = 1'b0;
             debug_mode_n  = 1'b0;
 
-          end else if (branch_taken_id) begin
+          end else if (id_ex_pipe_i.bch_prediction_from_id) begin
             ctrl_fsm_o.kill_if = 1'b1;
             ctrl_fsm_o.pc_mux  = PC_JUMP;           //Can Use PC_Branch here too, looks like the code does the same thing?
             ctrl_fsm_o.pc_set  = 1'b1;
