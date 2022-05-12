@@ -55,7 +55,6 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
   input  logic        alu_jmp_id_i,               // ALU jump
   input  logic        sys_en_id_i,
   input  logic        sys_mret_id_i,              // mret in ID stage
-  input  logic        bch_outcome_from_id,
 
   // From EX stage
   input  id_ex_pipe_t id_ex_pipe_i,
@@ -138,6 +137,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
   // Events in ID
   logic jump_in_id;
   logic jump_taken_id;
+  logic branch_taken_id;
 
   // Events in EX
   logic branch_in_ex;
@@ -244,6 +244,11 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
 
   // Blocking on branch_taken_q, as a branch has already been taken
   assign branch_taken_ex = branch_in_ex && !branch_taken_q;
+
+  
+
+  //Branch handling when decode stage predicts a branch should be taken
+  assign branch_taken_id = id_ex_pipe_i.alu_bch && id_ex_pipe_i.alu_en && id_ex_pipe_i.instr_valid && id_ex_pipe_i.bch_prediction_from_id && !branch_taken_q;
 
   // Exception in WB if the following evaluates to 1
   // CLIC: bus errors for pointer fetches are treated as NMI, not exceptions.
@@ -690,7 +695,17 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
             single_step_halt_if_n = 1'b0;
             debug_mode_n  = 1'b0;
 
+          end else if (branch_taken_id) begin
+            ctrl_fsm_o.kill_if = 1'b1;
+            ctrl_fsm_o.pc_mux  = PC_JUMP;           //Can Use PC_Branch here too, looks like the code does the same thing?
+            ctrl_fsm_o.pc_set  = 1'b1;
+
+            // Set flag to avoid further branches to the same target
+            // if we are stalled
+            branch_taken_n     = 1'b1;
+
           end else if (branch_taken_ex) begin
+            if (!(id_ex_pipe.bch_prediction_from_id)) begin 
             ctrl_fsm_o.kill_if = 1'b1;
             ctrl_fsm_o.kill_id = 1'b1;
 
@@ -700,7 +715,19 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
             // Set flag to avoid further branches to the same target
             // if we are stalled
             branch_taken_n     = 1'b1;
+              end else begin
+             // Do nothing when the branch is predicted taken in Decode stage and is actually taken in the execute stage
+              end
 
+          end  else if (!branch_taken_ex) begin
+            if ((id_ex_pipe.bch_prediction_from_id)) begin
+            ctrl_fsm_o.kill_if = 1'b1;
+            ctrl_fsm_o.pc_mux  = PC_EX;
+            ctrl_fsm_o.pc_set  = 1'b1;
+            branch_taken_n     = 1'b1;
+            end else begin
+            //Do nothing if the branch is 
+            end
           end else if (jump_taken_id) begin
             // kill_if
             ctrl_fsm_o.kill_if = 1'b1;

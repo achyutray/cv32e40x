@@ -157,9 +157,6 @@ module cv32e40x_core import cv32e40x_pkg::*;
   // ID/EX pipeline
   id_ex_pipe_t id_ex_pipe;
 
-  //Result of branch prediction from the ID stage
-  logic bch_outcome_id
-
   // EX/WB pipeline
   ex_wb_pipe_t ex_wb_pipe;
 
@@ -447,7 +444,6 @@ module cv32e40x_core import cv32e40x_pkg::*;
 
     // Jumps and branches
     .jmp_target_o                 ( jump_target_id            ),
-    .bch_outcome_id_o             ( bch_outcome_id            ),
 
     // IF/ID pipeline
     .if_id_pipe_i                 ( if_id_pipe                ),

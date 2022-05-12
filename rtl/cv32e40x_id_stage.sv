@@ -46,10 +46,6 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   // Jumps and branches
   output logic [31:0] jmp_target_o,
 
-  // Outcome of branch prediction
-  output logic         bch_outcome_id_o
-  output logic [31:0]  bch_target_from_id
-
   // IF/ID pipeline
   input  if_id_pipe_t if_id_pipe_i,
 
@@ -182,6 +178,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   logic [31:0]          imm_cl_type;
 
   // Branch target address
+  logic                 bch_outcome;
   logic [31:0]          bch_target;
 
   // Stall for multicycle ID instructions
@@ -278,8 +275,9 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
     .jalr_fw_i           ( jalr_fw         ),
     .bch_target_o        ( bch_target      ),
     .jmp_target_o        ( jmp_target_o    ),
-    .bch_prediction_id_o ( bch_outcome_id_o)
+    .bch_prediction_id_o ( bch_outcome)
   );
+  assign id_ex_pipe_o.bch_prediction_from_id <= bch_outcome
 
   ////////////////////////////////////////////////////////
   //   ___                                 _      _     //
