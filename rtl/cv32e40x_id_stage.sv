@@ -275,9 +275,8 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
     .jalr_fw_i           ( jalr_fw         ),
     .bch_target_o        ( bch_target      ),
     .jmp_target_o        ( jmp_target_o    ),
-    .bch_prediction_id_o ( bch_outcome)
+    .bch_prediction_id_o ( bch_outcome     )
   );
-  assign id_ex_pipe_o.bch_prediction_from_id <= bch_outcome
 
   ////////////////////////////////////////////////////////
   //   ___                                 _      _     //
@@ -486,6 +485,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   begin : ID_EX_PIPE_REGISTERS
     if (rst_n == 1'b0)
     begin
+      id_ex_pipe_o.bch_prediction_from_id <= 1'b0;
       id_ex_pipe_o.instr_valid            <= 1'b0;
       id_ex_pipe_o.alu_en                 <= 1'b0;
       id_ex_pipe_o.alu_bch                <= 1'b0;
@@ -540,6 +540,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
       // normal pipeline unstall case
       if (id_valid_o && ex_ready_i) begin
         id_ex_pipe_o.instr_valid  <= 1'b1;
+        id_ex_pipe_o.bch_prediction_from_id <= bch_outcome;
 
         // Operands
         if (alu_op_a_mux_sel != OP_A_NONE) begin
