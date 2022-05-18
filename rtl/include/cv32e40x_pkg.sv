@@ -1040,9 +1040,6 @@ typedef struct packed {
 
 // ID/EX pipeline
 typedef struct packed {
-  //Branch decision
-  logic bch_prediction_from_id
-
 
   // ALU
   logic         alu_en;
@@ -1052,6 +1049,9 @@ typedef struct packed {
   logic [31:0]  alu_operand_a;
   logic [31:0]  alu_operand_b;
   logic [31:0]  operand_c;
+
+  //Branch decision
+  logic bch_prediction_from_id;
 
   // Multiplier
   logic         mul_en;

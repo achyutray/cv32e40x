@@ -540,8 +540,6 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
       // normal pipeline unstall case
       if (id_valid_o && ex_ready_i) begin
         id_ex_pipe_o.instr_valid  <= 1'b1;
-        id_ex_pipe_o.bch_prediction_from_id <= bch_outcome;
-
         // Operands
         if (alu_op_a_mux_sel != OP_A_NONE) begin
           id_ex_pipe_o.alu_operand_a        <= operand_a;               // Used by most ALU, CSR and LSU instructions
@@ -557,6 +555,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
 
         id_ex_pipe_o.alu_en                 <= alu_en;
         if (alu_en) begin                                               // Branch comparison and jump link computation are done in ALU
+          id_ex_pipe_o.bch_prediction_from_id <= bch_outcome;
           id_ex_pipe_o.alu_bch              <= alu_bch;
           id_ex_pipe_o.alu_jmp              <= alu_jmp;
         end

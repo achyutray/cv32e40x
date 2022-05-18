@@ -137,7 +137,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
   // Events in ID
   logic jump_in_id;
   logic jump_taken_id;
-  //logic branch_taken_id;
+  logic branch_outcome_id;
 
   // Events in EX
   logic branch_in_ex;
@@ -244,6 +244,8 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
 
   // Blocking on branch_taken_q, as a branch has already been taken
   assign branch_taken_ex = branch_in_ex && !branch_taken_q;
+
+  assign branch_outcome_id = id_ex_pipe.bch_prediction_from_id;
 
   
 
@@ -695,7 +697,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
             single_step_halt_if_n = 1'b0;
             debug_mode_n  = 1'b0;
 
-          end else if (id_ex_pipe_i.bch_prediction_from_id) begin
+          end else if (branch_outcome_id) begin
             ctrl_fsm_o.kill_if = 1'b1;
             ctrl_fsm_o.pc_mux  = PC_JUMP;           //Can Use PC_Branch here too, looks like the code does the same thing?
             ctrl_fsm_o.pc_set  = 1'b1;
@@ -722,7 +724,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
           end  else if (!branch_taken_ex) begin
             if ((id_ex_pipe.bch_prediction_from_id)) begin
             ctrl_fsm_o.kill_if = 1'b1;
-            ctrl_fsm_o.pc_mux  = PC_EX;
+            pipe_pc_mux_ctrl  = PC_EX;
             ctrl_fsm_o.pc_set  = 1'b1;
             branch_taken_n     = 1'b1;
             end else begin
