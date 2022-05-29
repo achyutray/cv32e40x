@@ -722,42 +722,50 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
                 branch_taken_n     = 1'b1;
               end
             end else begin
-            /*
-                If branch is not taken in execute, two possibilities: 
-                  - It was predicted taken in decode, aka incorrect prediciton, in which case kill fetch and decode and set PC_mux to PC_branch and set PC_set
-                  - It was not predicted taken in decode, correct prediction in which case do nothing!
-              */
-              if(branch_taken_decode) begin
-                ctrl_fsm_o.kill_if = 1'b1;
-                ctrl_fsm_o.kill_id = 1'b1;
-                
-              end
-              //Check if the prediction in Decode actually matches the evaluation in execute
+              /*
+                  If branch is not taken in execute, two possibilities: 
+                    - It was predicted taken in decode, aka incorrect prediciton, in which case kill fetch and decode and set PC_mux to PC_branch and set PC_set
+                    - It was not predicted taken in decode, correct prediction in which case do nothing!
+                */
+                if(branch_taken_decode) begin
+                  ctrl_fsm_o.kill_if = 1'b1;
+                  //ctrl_fsm_o.kill_id = 1'b1;    Ideally whatever is in decode stage now is invalid since during the prev clock cycle, this was in fetch stage, and bp from decode would have handled this?
+                  /*
+                  Idea behind this method: 
+                  - If a branch instruction is predicted taken in DECODE, whatever is in FETCH is killed. 
+                  - The FETCH stage contained the next instruction, in the case that the branch was not taken.
+                  - If in EXECUTE stage we find that the branch is not taken indeed, the PC from FETCH stage is the PC we need
+                  - Thus checking for the states with invalid instructions will allow to find the next PC which needs to be fetched
+                  */
+                  if (!id_ex_pipe_i.instr_valid) begin
+                    pipe_pc_mux_ctrl = PC_EX;
+                  end else if (!if_id_pipe_i.instr_valid) begin
+                    pipe_pc_mux_ctrl = PC_ID;
+                  end else begin
+                    pipe_pc_mux_ctrl = PC_IF;
+                  end
+                  ctrl_fsm_o.pc_mux  = PC_FENCEI;
+                  ctrl_fsm_o.pc_set  = 1'b1;
+                  // Set flag to avoid further branches to the same target
+                  // if we are stalled
+                  //doing the opposite of what is done in the case when the branch is taken, is this correct?
+                  branch_taken_q     = 1'b1;
+
+                end
+                //If the branch is shown to be !Taken in EXECUTE and also predicted !Taken in DECODE do nothing
+              end 
             end 
-            if (!(id_ex_pipe_i.bch_prediction_from_id)) begin 
-            ctrl_fsm_o.kill_if = 1'b1;
-            ctrl_fsm_o.kill_id = 1'b1;
+          end else if ((id_ex_pipe_i.bch_prediction_from_id)) begin 
+              ctrl_fsm_o.kill_if = 1'b1;
+              //ctrl_fsm_o.kill_id = 1'b1;     Need this in EXECUTE stage to check if the Branch was predicted correctly
 
-            ctrl_fsm_o.pc_mux  = PC_BRANCH;
-            ctrl_fsm_o.pc_set  = 1'b1;
+              ctrl_fsm_o.pc_mux  = PC_BRANCH;
+              ctrl_fsm_o.pc_set  = 1'b1;
 
-            // Set flag to avoid further branches to the same target
-            // if we are stalled
-            branch_taken_n     = 1'b1;
-              end else begin
-             // Do nothing when the branch is predicted taken in Decode stage and is actually taken in the execute stage
-              end
-
-          end  
-          // else if (!branch_taken_ex) begin
-          //   if ((id_ex_pipe_i.bch_prediction_from_id)) begin
-          //   ctrl_fsm_o.kill_if = 1'b1;
-          //   pipe_pc_mux_ctrl  = PC_EX;
-          //   ctrl_fsm_o.pc_set  = 1'b1;
-          //   branch_taken_n     = 1'b1;
-          //   end else begin
-          //   //Do nothing if the branch is 
-          //   end
+              // Set flag to avoid further branches to the same target
+              // if we are stalled
+              branch_taken_n     = 1'b1;
+            end
           end else if (jump_taken_id) begin
             // kill_if
             ctrl_fsm_o.kill_if = 1'b1;
