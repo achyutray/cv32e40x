@@ -54,6 +54,7 @@ module cv32e40x_controller import cv32e40x_pkg::*;
   input  logic        alu_jmp_id_i,               // Jump (JAL, JALR)
   input  logic        alu_jmpr_id_i,              // Jump register (JALR)
   input  logic        alu_bch_bp_i,
+  input  logic        bch_prediction_from_id_i,
   input  logic        sys_en_id_i,
   input  logic        sys_mret_id_i,
   input  logic        csr_en_id_i,
@@ -143,6 +144,7 @@ module cv32e40x_controller import cv32e40x_pkg::*;
     .id_ready_i                  ( id_ready_i               ),
     .id_valid_i                  ( id_valid_i               ),
     .alu_en_raw_id_i             ( alu_en_raw_id_i          ),
+    .bch_prediction_from_id_i    ( bch_prediction_from_id_i ),
     .alu_jmp_id_i                ( alu_jmp_id_i             ),
     .alu_bch_bp_i                ( alu_bch_bp_i             ),
     .sys_en_id_i                 ( sys_en_id_i              ),

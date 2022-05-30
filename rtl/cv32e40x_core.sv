@@ -256,6 +256,7 @@ module cv32e40x_core import cv32e40x_pkg::*;
   logic        alu_en_raw_id;
   logic        alu_jmp_id;
   logic        alu_bch_bp;
+  logic        branch_prediction_from_id
   logic        alu_jmpr_id;
   logic        sys_en_id;
   logic        sys_mret_insn_id;
@@ -451,6 +452,9 @@ module cv32e40x_core import cv32e40x_pkg::*;
 
     // ID/EX pipeline
     .id_ex_pipe_o                 ( id_ex_pipe                ),
+
+    // Branch prediction from ID
+    .branch_prediction_from_id_o  ( branch_prediction_from_id),
 
     // EX/WB pipeline
     .ex_wb_pipe_i                 ( ex_wb_pipe                ),
@@ -749,29 +753,31 @@ module cv32e40x_core import cv32e40x_pkg::*;
   )
   controller_i
   (
-    .clk                            ( clk                    ),         // Gated clock
-    .clk_ungated_i                  ( clk_i                  ),         // Ungated clock
-    .rst_n                          ( rst_ni                 ),
+    .clk                            ( clk                      ),         // Gated clock
+    .clk_ungated_i                  ( clk_i                    ),         // Ungated clock
+    .rst_n                          ( rst_ni                   ),
 
-    .fetch_enable_i                 ( fetch_enable           ),
+    .fetch_enable_i                 ( fetch_enable             ),
 
     // From ID/EX pipeline
-    .id_ex_pipe_i                   ( id_ex_pipe             ),
+    .id_ex_pipe_i                   ( id_ex_pipe               ),
 
-    .csr_counter_read_i             ( csr_counter_read       ),
-    .csr_mnxti_read_i               ( csr_mnxti_read         ),
+    .csr_counter_read_i             ( csr_counter_read         ),
+    .csr_mnxti_read_i               ( csr_mnxti_read           ),
 
     // From EX/WB pipeline
-    .ex_wb_pipe_i                   ( ex_wb_pipe             ),
+    .ex_wb_pipe_i                   ( ex_wb_pipe               ),
 
-    .if_valid_i                     ( if_valid               ),
-    .pc_if_i                        ( pc_if                  ),
+    .if_valid_i                     ( if_valid                 ),
+    .pc_if_i                        ( pc_if                    ),
     // from IF/ID pipeline
-    .if_id_pipe_i                   ( if_id_pipe             ),
+    .if_id_pipe_i                   ( if_id_pipe               ),
+    .bch_prediction_from_id_i       ( branch_prediction_from_id),
 
-    .alu_en_raw_id_i                ( alu_en_raw_id          ),
-    .alu_jmp_id_i                   ( alu_jmp_id             ),
-    .alu_jmpr_id_i                  ( alu_jmpr_id            ),
+    .alu_en_raw_id_i                ( alu_en_raw_id            ),
+    .alu_jmp_id_i                   ( alu_jmp_id               ),
+    .alu_jmpr_id_i                  ( alu_jmpr_id              ),
+    .bch_prediction_from_id_i       ( bch_prediction_from_id_i ),
     .sys_en_id_i                    ( sys_en_id              ),
     .sys_mret_id_i                  ( sys_mret_insn_id       ),
     .csr_en_id_i                    ( csr_en_id              ),

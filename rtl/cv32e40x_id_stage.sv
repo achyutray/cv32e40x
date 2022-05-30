@@ -84,9 +84,10 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   input  rf_data_t    rf_rdata_i[REGFILE_NUM_READ_PORTS],
 
   // Stage ready/valid
-  output logic        id_ready_o,     // ID stage is ready for new data
-  output logic        id_valid_o,     // ID stage has valid (non-bubble) data for next stage
-  input  logic        ex_ready_i,     // EX stage is ready for new data
+  output logic        id_ready_o,                       // ID stage is ready for new data
+  output logic        id_valid_o,                       // ID stage has valid (non-bubble) data for next stage
+  output logic        branch_prediction_from_id_o,        // Sending this as an output to make sure the controller_fsm has the prediction from the DECODE stage
+  input  logic        ex_ready_i,                       // EX stage is ready for new data
 
   // eXtension interface
   if_xif.cpu_issue    xif_issue_if,
@@ -471,6 +472,8 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
 
   // Register writeback is enabled either by the decoder or by the XIF
   assign rf_we          = rf_we_dec || xif_we;
+
+  assign branch_prediction_from_id_o = bch_outcome;           // This output will be sent to the Controller FSM instead of checking if a branch is predicted taken from the id_ex_pipeline struct
 
 
   /////////////////////////////////////////////////////////////////////////////////

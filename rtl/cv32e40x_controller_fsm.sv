@@ -54,6 +54,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
   input  logic        alu_en_raw_id_i,            // ALU enable (not gated with deassert)
   input  logic        alu_jmp_id_i,               // ALU jump
   input  logic        alu_bch_bp_i,
+  input  logic        bch_prediction_from_id_i,
   input  logic        sys_en_id_i,
   input  logic        sys_mret_id_i,              // mret in ID stage
 
@@ -716,7 +717,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
               if(!branch_taken_decode) begin
                 ctrl_fsm_o.kill_if = 1'b1;
                 ctrl_fsm_o.kill_id = 1'b1;
-                ctrl_fsm_o.pc_mux  = PC_BRANCH;
+                ctrl_fsm_o.pc_mux  = PC_JUMP;
                 ctrl_fsm_o.pc_set  = 1'b1;
                 // Set flag to avoid further branches to the same target
                 // if we are stalled
@@ -759,7 +760,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
               ctrl_fsm_o.kill_if = 1'b1;
               //ctrl_fsm_o.kill_id = 1'b1;     Need this in EXECUTE stage to check if the Branch was predicted correctly
 
-              ctrl_fsm_o.pc_mux  = PC_BRANCH;
+              ctrl_fsm_o.pc_mux  = PC_JUMP;
               ctrl_fsm_o.pc_set  = 1'b1;
 
               // Set flag to avoid further branches to the same target
