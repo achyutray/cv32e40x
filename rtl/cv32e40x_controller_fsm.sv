@@ -756,9 +756,9 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
                 end
                 //If the branch is shown to be !Taken in EXECUTE and also predicted !Taken in DECODE do nothing
               end  
-          end else if ((id_ex_pipe_i.bch_prediction_from_id)) begin 
+          end else if (bch_prediction_from_id_i) begin 
               ctrl_fsm_o.kill_if = 1'b1;
-              //ctrl_fsm_o.kill_id = 1'b1;     Need this in EXECUTE stage to check if the Branch was predicted correctly
+              //ctrl_fsm_o.kill_id = 1'b1;     Commented because I need this in EXECUTE stage to check if the Branch was predicted correctly
 
               ctrl_fsm_o.pc_mux  = PC_JUMP;
               ctrl_fsm_o.pc_set  = 1'b1;
