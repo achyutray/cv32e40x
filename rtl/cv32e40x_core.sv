@@ -255,6 +255,7 @@ module cv32e40x_core import cv32e40x_pkg::*;
   // Controller <-> decoder
   logic        alu_en_raw_id;
   logic        alu_jmp_id;
+  logic        alu_bch_bp;
   logic        alu_jmpr_id;
   logic        sys_en_id;
   logic        sys_mret_insn_id;
@@ -465,6 +466,7 @@ module cv32e40x_core import cv32e40x_pkg::*;
     .alu_en_raw_o                 ( alu_en_raw_id             ),
     .alu_jmp_o                    ( alu_jmp_id                ),
     .alu_jmpr_o                   ( alu_jmpr_id               ),
+    .alu_bch_bp_o                 ( alu_bch_bp                ),
     .sys_en_o                     ( sys_en_id                 ),
     .sys_mret_insn_o              ( sys_mret_insn_id          ),
     .csr_en_o                     ( csr_en_id                 ),
@@ -769,6 +771,7 @@ module cv32e40x_core import cv32e40x_pkg::*;
 
     .alu_en_raw_id_i                ( alu_en_raw_id          ),
     .alu_jmp_id_i                   ( alu_jmp_id             ),
+    .alu_bch_bp_i                   ( alu_bch_bp             ),
     .alu_jmpr_id_i                  ( alu_jmpr_id            ),
     .sys_en_id_i                    ( sys_en_id              ),
     .sys_mret_id_i                  ( sys_mret_insn_id       ),

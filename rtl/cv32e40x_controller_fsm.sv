@@ -53,6 +53,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
   input  if_id_pipe_t if_id_pipe_i,
   input  logic        alu_en_raw_id_i,            // ALU enable (not gated with deassert)
   input  logic        alu_jmp_id_i,               // ALU jump
+  input  logic        alu_bch_bp_i,
   input  logic        sys_en_id_i,
   input  logic        sys_mret_id_i,              // mret in ID stage
 
@@ -249,7 +250,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
   assign branch_outcome_id = id_ex_pipe_i.bch_prediction_from_id;
 
   //Branch handling when decode stage predicts a branch should be taken
-  assign branch_taken_decode = id_ex_pipe_i.alu_bch && id_ex_pipe_i.alu_en && id_ex_pipe_i.instr_valid && branch_outcome_id && !branch_taken_q;
+  assign branch_taken_decode = alu_bch_bp_i && alu_en_id_i && if_id_pipe_i.instr_valid && branch_outcome_id && !branch_taken_q;
 
   // Exception in WB if the following evaluates to 1
   // CLIC: bus errors for pointer fetches are treated as NMI, not exceptions.
@@ -749,12 +750,11 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
                   // Set flag to avoid further branches to the same target
                   // if we are stalled
                   //doing the opposite of what is done in the case when the branch is taken, is this correct?
-                  branch_taken_q     = 1'b1;
+                  branch_taken_n     = 1'b0;
 
                 end
                 //If the branch is shown to be !Taken in EXECUTE and also predicted !Taken in DECODE do nothing
-              end 
-            end 
+              end  
           end else if ((id_ex_pipe_i.bch_prediction_from_id)) begin 
               ctrl_fsm_o.kill_if = 1'b1;
               //ctrl_fsm_o.kill_id = 1'b1;     Need this in EXECUTE stage to check if the Branch was predicted correctly
@@ -765,7 +765,6 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
               // Set flag to avoid further branches to the same target
               // if we are stalled
               branch_taken_n     = 1'b1;
-            end
           end else if (jump_taken_id) begin
             // kill_if
             ctrl_fsm_o.kill_if = 1'b1;

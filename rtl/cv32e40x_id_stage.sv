@@ -67,6 +67,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
 
   output logic        alu_en_raw_o,
   output logic        alu_jmp_o,        // Jump (JAL, JALR)
+  output logic        alu_bch_bp_o,     // Branch handling in controller_fsm needs this signal
   output logic        alu_jmpr_o,       // Jump register (JALR)
 
   output logic        sys_en_o,
@@ -642,6 +643,7 @@ module cv32e40x_id_stage import cv32e40x_pkg::*;
   assign alu_en_raw_o = alu_en_raw;
   assign alu_jmp_o    = alu_jmp;
   assign alu_jmpr_o   = alu_jmpr;
+  assign alu_bch_bp_o = alu_bch;
 
   assign csr_en_o = csr_en;
   assign csr_op_o = csr_op;
