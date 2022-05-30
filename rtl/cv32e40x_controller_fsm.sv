@@ -250,7 +250,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
   assign branch_outcome_id = id_ex_pipe_i.bch_prediction_from_id;
 
   //Branch handling when decode stage predicts a branch should be taken
-  assign branch_taken_decode = alu_bch_bp_i && alu_en_id_i && if_id_pipe_i.instr_valid && branch_outcome_id && !branch_taken_q;
+  assign branch_taken_decode = alu_bch_bp_i && alu_en_raw_id_i && if_id_pipe_i.instr_valid && branch_outcome_id && !branch_taken_q;
 
   // Exception in WB if the following evaluates to 1
   // CLIC: bus errors for pointer fetches are treated as NMI, not exceptions.
