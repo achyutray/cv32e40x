@@ -256,7 +256,7 @@ module cv32e40x_core import cv32e40x_pkg::*;
   logic        alu_en_raw_id;
   logic        alu_jmp_id;
   logic        alu_bch_bp;
-  logic        branch_prediction_from_id
+  logic        branch_prediction_from_id;
   logic        alu_jmpr_id;
   logic        sys_en_id;
   logic        sys_mret_insn_id;
@@ -773,11 +773,9 @@ module cv32e40x_core import cv32e40x_pkg::*;
     // from IF/ID pipeline
     .if_id_pipe_i                   ( if_id_pipe               ),
     .bch_prediction_from_id_i       ( branch_prediction_from_id),
-
     .alu_en_raw_id_i                ( alu_en_raw_id            ),
     .alu_jmp_id_i                   ( alu_jmp_id               ),
     .alu_jmpr_id_i                  ( alu_jmpr_id              ),
-    .bch_prediction_from_id_i       ( bch_prediction_from_id_i ),
     .sys_en_id_i                    ( sys_en_id              ),
     .sys_mret_id_i                  ( sys_mret_insn_id       ),
     .csr_en_id_i                    ( csr_en_id              ),
