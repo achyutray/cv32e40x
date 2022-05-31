@@ -159,8 +159,6 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
     endcase
   end
 
-  // Branch handling
-  assign branch_decision_o = alu_cmp_result;
 
 
   ////////////////////////////
@@ -193,6 +191,10 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
     .result_o            ( alu_result                    ),
     .cmp_result_o        ( alu_cmp_result                )
   );
+
+
+  // Branch handling
+  assign branch_decision_o = alu_cmp_result;
 
   ////////////////////////////////////////////////////
   //  ____ _____     __     __  ____  _____ __  __  //

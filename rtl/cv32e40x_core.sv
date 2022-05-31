@@ -761,6 +761,7 @@ module cv32e40x_core import cv32e40x_pkg::*;
 
     // From ID/EX pipeline
     .id_ex_pipe_i                   ( id_ex_pipe               ),
+    .alu_bch_bp_i                   ( alu_bch_bp               ),
 
     .csr_counter_read_i             ( csr_counter_read         ),
     .csr_mnxti_read_i               ( csr_mnxti_read           ),

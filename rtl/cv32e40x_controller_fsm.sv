@@ -717,7 +717,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
               if(!branch_taken_decode) begin
                 ctrl_fsm_o.kill_if = 1'b1;
                 ctrl_fsm_o.kill_id = 1'b1;
-                ctrl_fsm_o.pc_mux  = PC_JUMP;
+                ctrl_fsm_o.pc_mux  = PC_BRANCH;
                 ctrl_fsm_o.pc_set  = 1'b1;
                 // Set flag to avoid further branches to the same target
                 // if we are stalled
@@ -760,7 +760,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
               ctrl_fsm_o.kill_if = 1'b1;
               //ctrl_fsm_o.kill_id = 1'b1;     Commented because I need this in EXECUTE stage to check if the Branch was predicted correctly
 
-              ctrl_fsm_o.pc_mux  = PC_JUMP;
+              ctrl_fsm_o.pc_mux  = PC_BRANCH;
               ctrl_fsm_o.pc_set  = 1'b1;
 
               // Set flag to avoid further branches to the same target
