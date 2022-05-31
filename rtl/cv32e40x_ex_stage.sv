@@ -195,6 +195,7 @@ module cv32e40x_ex_stage import cv32e40x_pkg::*;
 
   // Branch handling
   assign branch_decision_o = alu_cmp_result;
+  assign branch_target_o   = id_ex_pipe_i.operand_c;
 
   ////////////////////////////////////////////////////
   //  ____ _____     __     __  ____  _____ __  __  //
