@@ -55,6 +55,8 @@ module cv32e40x_if_stage import cv32e40x_pkg::*;
 
   input ctrl_fsm_t      ctrl_fsm_i,
   input  logic          trigger_match_i,
+  input  id_ex_pipe_t   id_ex_pipe_i,
+
 
   // Instruction bus interface
   if_c_obi.master       m_c_obi_instr_if,
@@ -134,6 +136,7 @@ module cv32e40x_if_stage import cv32e40x_pkg::*;
       PC_TRAP_CLICV:     branch_addr_n = {mtvt_addr_i, ctrl_fsm_i.mtvt_pc_mux[SMCLIC_ID_WIDTH-1:0], 2'b00};
       // CLIC spec requires to clear bit 0. This clearing is done in the alignment buffer.
       PC_TRAP_CLICV_TGT: branch_addr_n = if_id_pipe_o.instr.bus_resp.rdata;
+      PC_BP:       branch_addr_n = id_ex_pipe_i.pc + (id_ex_pipe_i.instr_meta.compressed ? 32'd2 : 32'd4);
       default:;
     endcase
   end

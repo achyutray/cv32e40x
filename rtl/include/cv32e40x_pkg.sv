@@ -843,7 +843,8 @@ typedef enum logic[3:0] {
   PC_TRAP_DBE = 4'b1011,
   PC_TRAP_NMI = 4'b1100,
   PC_TRAP_CLICV = 4'b1101,
-  PC_TRAP_CLICV_TGT = 4'b1110
+  PC_TRAP_CLICV_TGT = 4'b1110,
+  PC_BP       = 4'b1111
 } pc_mux_e;
 
 // Exception Cause

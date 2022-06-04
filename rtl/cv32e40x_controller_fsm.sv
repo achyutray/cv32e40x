@@ -148,6 +148,8 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
 
   logic branch_taken_n;
   logic branch_taken_q;
+  logic jump_taken_n;
+  logic jump_taken_q;
 
   // Events in WB
   logic exception_in_wb;
@@ -246,12 +248,12 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
   assign branch_in_ex = id_ex_pipe_i.alu_bch && id_ex_pipe_i.alu_en && id_ex_pipe_i.instr_valid;
 
   // Blocking on branch_taken_q, as a branch has already been taken
-  assign branch_taken_ex = branch_in_ex  && branch_decision_ex_i && !branch_taken_q;
+  assign branch_taken_ex = branch_in_ex  && branch_decision_ex_i;// && !branch_taken_q;
 
   assign branch_outcome_id = id_ex_pipe_i.bch_prediction_from_id;
 
   //Branch handling when decode stage predicts a branch should be taken
-  assign branch_taken_decode = alu_bch_bp_i && alu_en_raw_id_i && if_id_pipe_i.instr_valid && branch_outcome_id && !branch_taken_q;
+  assign branch_taken_decode = alu_bch_bp_i && alu_en_raw_id_i && if_id_pipe_i.instr_valid && bch_prediction_from_id_i && !jump_taken_q;
 
   // Exception in WB if the following evaluates to 1
   // CLIC: bus errors for pointer fetches are treated as NMI, not exceptions.
@@ -524,7 +526,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
 
     // Ensure jumps and branches are taken only once
     branch_taken_n                 = branch_taken_q;
-
+    jump_taken_n                   = jump_taken_q;
     fencei_flush_req_set           = 1'b0;
 
     ctrl_fsm_o.pc_set_clicv        = 1'b0;
@@ -707,14 +709,14 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
           //   // if we are stalled
           //   branch_taken_n     = 1'b1;
 
-          end else if (branch_in_ex) begin
-            if(branch_taken_ex) begin
-              /*
-                If branch is taken in execute, two possibilities: 
-                  - It was also predicted taken in decode, aka correct prediciton, in which case do nothing!
-                  - It was not predicted taken in decode, so incorrect prediction in which case kill fetch and decode and set PC_mux to PC_branch and set PC_set
-              */
-              if(!branch_taken_decode) begin
+          end else if (branch_in_ex && branch_taken_ex) begin
+            //(branch_taken_ex) begin
+               /*
+                 If branch is taken in execute, two possibilities: 
+                   - It was also predicted taken in decode, aka correct prediciton, in which case do nothing!
+                   - It was not predicted taken in decode, so incorrect prediction in which case kill fetch and decode and set PC_mux to PC_branch and set PC_set
+               */
+              if(!branch_outcome_id && !branch_taken_q) begin
                 ctrl_fsm_o.kill_if = 1'b1;
                 ctrl_fsm_o.kill_id = 1'b1;
                 ctrl_fsm_o.pc_mux  = PC_BRANCH;
@@ -723,49 +725,41 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
                 // if we are stalled
                 branch_taken_n     = 1'b1;
               end
-            end else begin
+            end else if (branch_in_ex && branch_outcome_id) begin
               /*
                   If branch is not taken in execute, two possibilities: 
                     - It was predicted taken in decode, aka incorrect prediciton, in which case kill fetch and decode and set PC_mux to PC_branch and set PC_set
                     - It was not predicted taken in decode, correct prediction in which case do nothing!
                 */
-                if(branch_taken_decode) begin
-                  ctrl_fsm_o.kill_if = 1'b1;
-                  //ctrl_fsm_o.kill_id = 1'b1;    Ideally whatever is in decode stage now is invalid since during the prev clock cycle, this was in fetch stage, and bp from decode would have handled this?
-                  /*
-                  Idea behind this method: 
-                  - If a branch instruction is predicted taken in DECODE, whatever is in FETCH is killed. 
-                  - The FETCH stage contained the next instruction, in the case that the branch was not taken.
-                  - If in EXECUTE stage we find that the branch is not taken indeed, the PC from FETCH stage is the PC we need
-                  - Thus checking for the states with invalid instructions will allow to find the next PC which needs to be fetched
-                  */
-                  if (!id_ex_pipe_i.instr_valid) begin
-                    pipe_pc_mux_ctrl = PC_EX;
-                  end else if (!if_id_pipe_i.instr_valid) begin
-                    pipe_pc_mux_ctrl = PC_ID;
-                  end else begin
-                    pipe_pc_mux_ctrl = PC_IF;
-                  end
-                  ctrl_fsm_o.pc_mux  = PC_FENCEI;
-                  ctrl_fsm_o.pc_set  = 1'b1;
-                  // Set flag to avoid further branches to the same target
-                  // if we are stalled
-                  //doing the opposite of what is done in the case when the branch is taken, is this correct?
-                  branch_taken_n     = 1'b0;
+              if(!branch_taken_ex && !branch_taken_q) begin
+                ctrl_fsm_o.kill_if = 1'b1;
+                ctrl_fsm_o.kill_id = 1'b1;
+                /*
+                Idea behind this method: 
+                - If a branch instruction is predicted taken in DECODE, whatever is in FETCH is killed. 
+                - The FETCH stage contained the next instruction, in the case that the branch was not taken.
+                - If in EXECUTE stage we find that the branch is not taken indeed, the PC from FETCH stage is the PC we need
+                - Thus checking for the states with invalid instructions will allow to find the next PC which needs to be fetched
+                */
+                ctrl_fsm_o.pc_mux  = PC_BP;
+                ctrl_fsm_o.pc_set  = 1'b1;
+                // Set flag to avoid further branches to the same target
+                // if we are stalled
+                //doing the opposite of what is done in the case when the branch is taken, is this correct?
+                branch_taken_n     = 1'b1;
 
-                end
-                //If the branch is shown to be !Taken in EXECUTE and also predicted !Taken in DECODE do nothing
-              end  
-          end else if (bch_prediction_from_id_i) begin 
+              end
+              //If the branch is shown to be !Taken in EXECUTE and also predicted !Taken in DECODE do nothing
+          end else if (branch_taken_decode) begin 
               ctrl_fsm_o.kill_if = 1'b1;
               //ctrl_fsm_o.kill_id = 1'b1;     Commented because I need this in EXECUTE stage to check if the Branch was predicted correctly
 
-              ctrl_fsm_o.pc_mux  = PC_BRANCH;
+              ctrl_fsm_o.pc_mux  = PC_JUMP;
               ctrl_fsm_o.pc_set  = 1'b1;
 
               // Set flag to avoid further branches to the same target
               // if we are stalled
-              branch_taken_n     = 1'b1;
+              jump_taken_n     = 1'b1;
           end else if (jump_taken_id) begin
             // kill_if
             ctrl_fsm_o.kill_if = 1'b1;
@@ -922,6 +916,10 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
     // Clear jump/branch flag when new insn is emitted from IF
     if (branch_taken_q && if_valid_i && id_ready_i) begin
       branch_taken_n = 1'b0;
+     end
+
+     if (jump_taken_q && id_valid_i && ex_ready_i) begin
+      jump_taken_n = 1'b0;
     end
   end
 
@@ -991,9 +989,11 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
     if (rst_n == 1'b0) begin
       single_step_halt_if_q <= 1'b0;
       branch_taken_q        <= 1'b0;
+      jump_taken_q          <= 1'b0;
     end else begin
       single_step_halt_if_q <= single_step_halt_if_n;
       branch_taken_q        <= branch_taken_n;
+      jump_taken_q          <= jump_taken_n;
     end
   end
 
