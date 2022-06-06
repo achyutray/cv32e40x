@@ -918,7 +918,7 @@ module cv32e40x_controller_fsm import cv32e40x_pkg::*;
       branch_taken_n = 1'b0;
      end
 
-     if (jump_taken_q && id_valid_i && ex_ready_i) begin
+     if (jump_taken_q && if_valid_i && id_ready_i) begin
       jump_taken_n = 1'b0;
     end
   end
