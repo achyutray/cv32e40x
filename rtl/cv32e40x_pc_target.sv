@@ -46,11 +46,12 @@ module cv32e40x_pc_target import cv32e40x_pkg::*;
       CT_JAL:  pc_target = pc_id_i   + imm_uj_type_i;
       CT_BCH:  begin 
                     pc_target = pc_id_i   + imm_sb_type_i;
-                   if(imm_sb_type_i[31] ) begin
-                       bch_prediction_id_o <= 1;
-                     end else begin
-                       bch_prediction_id_o <= 0;
-                      end
+                    bch_prediction_id_o <= 0;
+                  //  if(imm_sb_type_i[31] ) begin
+                  //      bch_prediction_id_o <= 1;
+                  //    end else begin
+                  //      bch_prediction_id_o <= 0;
+                  //     end
                 end
       CT_JALR: pc_target = jalr_fw_i + imm_i_type_i;    // Forward from WB, but only of ALU result
       default: begin 
